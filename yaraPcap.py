@@ -19,21 +19,21 @@ import platform
 try:
 	import yara
 except:
-	print "Failed to Import Yara"
+	print ("Failed to Import Yara")
 	sys.exit()
 osType = platform.system()
 
 
 # SET THE PATH FOR TCPFLOW
 if osType == "Windows":
-	tcpFlowPath = "C:\\Users\\Kevin\\Documents\\Projects\\YaraPcap\\tcpflow64.exe"
+	tcpFlowPath = "Path\\To\\Your\\Binary\\Of\\tcpflow64.exe"
 	if not os.path.exists(tcpFlowPath):
-		print "TCPFlow not found Please Check Path or Install (https://github.com/simsong/tcpflow)"
+		print ("TCPFlow not found Please Check Path or Install (https://github.com/simsong/tcpflow)")
 		sys.exit()
 if osType == "Linux":
 	tcpFlowPath = "/usr/local/bin/tcpflow"
 	if not os.path.exists(tcpFlowPath):
-		print "TCPFlow Not Found, Please check path or Install (https://github.com/simsong/tcpflow)"
+		print ("TCPFlow Not Found, Please check path or Install (https://github.com/simsong/tcpflow)")
 		sys.exit()
 # End
 
@@ -53,7 +53,7 @@ def main():
 	tmpDir = tempfile.mkdtemp()
 	processPcap().Process(args[1], tmpDir)
 	yaraRules = yara.compile(args[0])
-	print "Scanning Files With Yara"
+	print ("Scanning Files With Yara")
 	for httpReq in os.listdir(tmpDir):
 		results = yaraScan().scanner(os.path.join(tmpDir, httpReq), yaraRules)
 		if results and options.saveDir:
@@ -61,21 +61,22 @@ def main():
 				os.mkdir(options.saveDir)
 			shutil.copyfile(os.path.join(tmpDir, httpReq), os.path.join(options.saveDir, httpReq))
 		if results:
-			print "   Match Found ", httpReq
+			print ("   Match Found ", httpReq)
 			reportMain(reportFile, httpReq, results)
-	print "Scanning Complete"
-	print "Report Written to ", reportFile
+	print ("Scanning Complete")
+	print ("Report Written to ", reportFile)
 	if options.saveDir:
-		print "Matching Files Written to ", options.saveDir
-	print "Removing Temporary Directories"
+		print ("Matching Files Written to ", options.saveDir)
+	print ("Removing Temporary Directories")
 	shutil.rmtree(tmpDir)		
 
 class processPcap:
 	def Process(self, pcap, tmpDir):
-		print pcap
+		print(pcap)
 		shutil.copyfile(pcap, os.path.join(tmpDir, "raw.pcap"))
-		print "Processing PCAP File For HTTP Streams"
-		retcode = subprocess.call("(cd %s && %s -AH -r %s)"%(os.path.join(tmpDir), tcpFlowPath, "raw.pcap"), shell=True)
+		print ("Processing PCAP File For HTTP Streams")
+		pcap_path = os.path.join(tmpDir, "raw.pcap")
+		retcode = subprocess.call([tcpFlowPath, "-a", "-r", pcap_path], cwd=tmpDir)
 		return tmpDir
 		
 class yaraScan:
